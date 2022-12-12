@@ -6,18 +6,20 @@ const Message = require("../models/Message");
 // @desc    add conversation
 // @route   POST /api/conversation
 // @access  PRIVATE
-const addConversation = asyncHandler(async (req, res) => {
+const addConversation = asyncHandler(async (req, res, next) => {
   if (!req.body.receiverId) {
     res.status(400);
     throw new Error("Please add the 'receiverId' field");
   }
 
   const convExist = await Conversation.find({
-    members: { $in: req.body.receiverId },
+    members: [req.user._id, req.body.receiverId],
   });
+
   console.log(convExist);
 
   if (convExist.length > 0) {
+    res.status(400);
     throw new Error("Conversation already exist");
   }
 
@@ -30,8 +32,6 @@ const addConversation = asyncHandler(async (req, res) => {
       path: "members",
       select: "_id username profilePicture",
     });
-
-    console.log(result);
 
     res.status(201).json(result);
   } catch (error) {
