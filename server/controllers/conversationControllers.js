@@ -12,12 +12,28 @@ const addConversation = asyncHandler(async (req, res) => {
     throw new Error("Please add the 'receiverId' field");
   }
 
+  const convExist = await Conversation.find({
+    members: { $in: req.body.receiverId },
+  });
+  console.log(convExist);
+
+  if (convExist.length > 0) {
+    throw new Error("Conversation already exist");
+  }
+
   try {
     const newConv = await Conversation.create({
       members: [req.user._id, req.body.receiverId],
     });
 
-    res.status(201).json(newConv);
+    const result = await newConv.populate({
+      path: "members",
+      select: "_id username profilePicture",
+    });
+
+    console.log(result);
+
+    res.status(201).json(result);
   } catch (error) {
     res.status(500);
     throw new Error(error.message);

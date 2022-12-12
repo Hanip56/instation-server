@@ -45,7 +45,14 @@ const login = asyncHandler(async (req, res) => {
 
   const { email, password } = req.body;
 
-  const user = await User.findOne({ email }).select("+password");
+  const regexMatch =
+    /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+
+  const value = email.match(regexMatch)
+    ? { email: email }
+    : { username: email };
+
+  const user = await User.findOne(value).select("+password");
 
   if (!user) {
     res.status(404);
